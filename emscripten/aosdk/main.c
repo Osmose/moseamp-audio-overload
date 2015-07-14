@@ -121,7 +121,99 @@ static void do_frame(uint32 size, int16 *buffer)
 {
 	(*types[type].gen)(buffer, size);
 }
+/*
+int main(int argv, char *argc[])
+{
+	FILE *file;
+	uint8 *buffer;
+	uint32 size, filesig;
 
+	printf("AOSDK test program v1.0 by R. Belmont [AOSDK release 1.4.8]\nCopyright (c) 2007-2009 R. Belmont and Richard Bannister - please read license.txt for license details\n\n");
+
+	// check if an argument was given
+	if (argv < 2)
+	{
+		printf("Error: must specify a filename!\n");
+		return -1;
+	}
+
+	file = fopen(argc[1], "rb");
+
+	if (!file)
+	{
+		printf("ERROR: could not open file %s\n", argc[1]);
+		return -1;
+	}
+
+	// get the length of the file by seeking to the end then reading the current position
+	fseek(file, 0, SEEK_END);
+	size = ftell(file);
+	// reset the pointer
+	fseek(file, 0, SEEK_SET);
+
+	buffer = malloc(size);
+
+	if (!buffer)
+	{
+		fclose(file);
+		printf("ERROR: could not allocate %d bytes of memory\n", size);
+		return -1;
+	}
+
+	// read the file
+	fread(buffer, size, 1, file);
+	fclose(file);
+
+	// now try to identify the file
+	type = 0;
+	filesig = buffer[0]<<24 | buffer[1]<<16 | buffer[2]<<8 | buffer[3];
+	while (types[type].sig != 0xffffffff)
+	{
+		if (filesig == types[type].sig)
+		{
+			break;
+		}
+		else
+		{
+			type++;
+		}
+	}
+
+	// now did we identify it above or just fall through?
+	if (types[type].sig != 0xffffffff)
+	{
+		printf("File identified as %s\n", types[type].name);
+	}
+	else
+	{
+		printf("ERROR: File is unknown, signature bytes are %02x %02x %02x %02x\n", buffer[0], buffer[1], buffer[2], buffer[3]);
+		free(buffer);
+		return -1;
+	}
+
+	if ((*types[type].start)(buffer, size) != AO_SUCCESS)
+	{
+		free(buffer);
+		printf("ERROR: Engine rejected file!\n");
+		return -1;
+	}
+
+	m1sdr_Init(44100);
+	m1sdr_SetCallback(do_frame);
+	m1sdr_PlayStart();
+
+	printf("\n\nPlaying.  Press CTRL-C to stop.\n");
+
+	while (1)
+	{
+		m1sdr_TimeCheck();
+	}
+
+	free(buffer);
+
+	return 1;
+}
+*/
 // stub for MAME stuff
 int change_pc(int foo)
 {

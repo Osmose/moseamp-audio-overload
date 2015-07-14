@@ -171,3 +171,4 @@ void dc_hw_init(void)
 	aica_interface.region[0] = dc_ram;
 	aica_start(&aica_interface);
 }
+

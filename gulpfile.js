@@ -99,7 +99,7 @@ gulp.task('build', function(done) {
         '-s', 'ASSERTIONS=1',
         '-s', 'ALLOW_MEMORY_GROWTH=1',
 
-        '-O1',
+        '-O2',
         '-I' + aosdk_dir,
         '-I' + aosdk_path('eng_ssf'),
         '-I' + aosdk_path('eng_qsf'),

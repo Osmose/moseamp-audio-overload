@@ -6,10 +6,21 @@ import * as formats from 'moseamp/formats';
 import {FS, Module, NODEFS} from '../aosdk_emscripten.js';
 
 
+let extToType = {
+    qsf: 0,
+    ssf: 1,
+    psf: 2,
+    minipsf: 2,
+    spu: 3,
+    psf2: 4,
+    dsf: 5,
+};
+
+
 let aosdk = {
-    openFile: Module.cwrap('open_psf', null, ['string']),
-    generateSoundData: Module.cwrap('generate_sound_data_psf', 'number'),
-    //songInfo: Module.cwrap('song_info', 'string', ['string', 'number']),
+    openFile: Module.cwrap('open_file', null, ['string', 'number']),
+    generateSoundData: Module.cwrap('generate_sound_data', 'number'),
+    songInfo: Module.cwrap('song_info', 'string'),
 };
 
 
@@ -20,7 +31,7 @@ FS.mount(NODEFS, {root: '/'}, '/realworld');
 export function activate() {
     formats.register(
         'Game Music files',
-        ['psf', 'minipsf'],//, 'spu', 'psf2', 'ssf', 'dsf', 'qsf'],
+        ['psf', 'minipsf', 'spu', /*'psf2',*/ 'ssf', /*'dsf',*/ 'qsf'],
          AOSDKAudioFile
     );
 }
@@ -31,29 +42,27 @@ export class AOSDKAudioFile extends AudioFile {
         super(filePath);
         this.filename = path.basename(filePath);
         this.emsPath = path.join('/realworld', filePath);
-
-        /*
-        this.metadata = JSON.parse(gme.songInfo(this.emsPath, 0));
-        this.title = this.metadata.game;
-        this.artist = this.metadata.author || this.artist;
-        this.album = this.metadata.system || this.album;
-        this.duration = this.metadata.length / 1000;
-        */
     }
 
     createAudioNode(ctx) {
         return new Promise((resolve) => {
-            resolve(new GMEAudioNode(ctx, this));
+            resolve(new AOSDKAudioNode(ctx, this));
         });
     }
 
     load() {
-        aosdk.openFile(this.emsPath);
+        let type = extToType[path.extname(this.filename).slice(1)];
+        aosdk.openFile(this.emsPath, type);
+
+        this.metadata = JSON.parse(aosdk.songInfo());
+        this.title = this.metadata.title;
+        this.artist = this.metadata.artist || this.artist;
+        this.album = this.metadata.game || this.album;
     }
 }
 
 
-export class GMEAudioNode {
+export class AOSDKAudioNode {
     constructor(ctx, audioFile) {
         this.audioFile = audioFile;
         this.playing = false;

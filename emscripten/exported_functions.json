@@ -1,4 +1,5 @@
 [
-    "_open_psf",
-    "_generate_sound_data_psf"
+    "_open_file",
+    "_generate_sound_data",
+    "_song_info"
 ]
