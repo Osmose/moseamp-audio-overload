@@ -1,4 +1,5 @@
 .DS_Store
 node_modules
 *.o
-aosdk_emscripten.js*
+aosdk.dylib*
+aosdk.so

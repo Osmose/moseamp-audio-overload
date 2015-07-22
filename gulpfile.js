@@ -6,14 +6,15 @@ var path = require('path');
 var spawn = require('child_process').spawn;
 
 
-var aosdk_dir = path.join('emscripten', 'aosdk');
-var json_dir = path.join('emscripten', 'json', 'ccan', 'json');
-var json_files = glob.sync(json_dir + '/*.c');
+var aosdk_dir = path.join('aosdk');
 
 var aosdk_files = [
     // Main files
     'main.c',
     'corlett.c',
+
+    // Workaround for node-ffi ArrayType weirdness
+    'eng_wrappers.c',
 
     // DSF engine
     'eng_dsf/eng_dsf.c',
@@ -80,32 +81,23 @@ function aosdk_path(filePath) {
  * Compile the C libraries with emscripten.
  */
 gulp.task('build', function(done) {
-    var emcc = process.env.EMCC_BIN || argv.emcc || 'emcc';
+    var gcc = process.env.GCC_BIN || argv.gcc || 'gcc';
 
-    var source_files = [
-        'emscripten/aosdk_wrapper.c',
-    ].concat(json_files, aosdk_files);
-    var outfile = 'aosdk_emscripten.js';
-    var preJS = path.resolve(__dirname, 'src', 'pre_emscripten.js');
-    var postJS = path.resolve(__dirname, 'src', 'post_emscripten.js');
-
+    var outfile = 'aosdk.dylib';
     var flags = [
         '-o', outfile,
-        '--pre-js', preJS,
-        '--post-js', postJS,
 
-        '-s', 'ASM_JS=1',
-        '-s', 'EXPORTED_FUNCTIONS=@emscripten/exported_functions.json',
-        '-s', 'ASSERTIONS=1',
-        '-s', 'ALLOW_MEMORY_GROWTH=1',
+        '-O0',
+        '-std=gnu89',
+        '-dynamiclib',
+        '-flat_namespace',
+        '-fPIC',
 
-        '-O2',
         '-I' + aosdk_dir,
         '-I' + aosdk_path('eng_ssf'),
         '-I' + aosdk_path('eng_qsf'),
         '-I' + aosdk_path('eng_dsf'),
         '-I' + aosdk_path('zlib'),
-        '-I' + json_dir,
         '-lm',
         '-DPATH_MAX=1024',
         '-DHAS_PSX_CPU=1',
@@ -119,10 +111,10 @@ gulp.task('build', function(done) {
         '-Wno-return-type',
         '-Wno-c++11-compat-deprecated-writable-strings',
     ];
-    var args = [].concat(flags, source_files);
+    var args = [].concat(flags, aosdk_files);
 
-    gutil.log('Compiling via emscripten to ' + outfile);
-    var build_proc = spawn(emcc, args, {stdio: 'inherit'});
+    gutil.log('Compiling Audio Overload SDK to ' + outfile);
+    var build_proc = spawn(gcc, args, {stdio: 'inherit'});
     build_proc.on('exit', function() {
         done();
     });
